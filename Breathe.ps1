@@ -1,10 +1,14 @@
 ﻿
 if (Get-Module -ListAvailable -Name BurntToast) {
-    Write-Host "BurntToast Module exists"
+    
 } 
 else {
     Install-Module -Name BurntToast
 }
+
+Write-Host "Breathe: Developed by Microsoft Hackathon Group"
+$nl = [Environment]::NewLine
+Write-Host $nl
 
 $interval = Read-Host -Prompt 'At what interval do you want  to take a break? (in minutes)'
 
