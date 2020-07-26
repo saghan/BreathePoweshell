@@ -1,39 +1,36 @@
-﻿[string[]]$file_data = Get-Content $PSScriptRoot"\quotes.txt" -Raw
-$file_data = $file_data.Split([Environment]::NewLine, [StringSplitOptions]::RemoveEmptyEntries)
-Write-Host $file_data.Length
-$line_num =0
-
-foreach($line in $file_data){
-Write-Host $line
+﻿
+if (Get-Module -ListAvailable -Name BurntToast) {
+    Write-Host "BurntToast Module exists"
+} 
+else {
+    Install-Module -Name BurntToast
 }
+
+$interval = Read-Host -Prompt 'At what interval do you want  to take a break? (in minutes)'
+
+[string[]]$file_data = Get-Content $PSScriptRoot"\quotes.txt" -Raw
+$file_data = $file_data.Split([Environment]::NewLine, [StringSplitOptions]::RemoveEmptyEntries)
+$line_num =0
 
 while($true){
 $StartTime = Get-Date
-    $EndTime = $StartTime.AddSeconds(6)
+    $EndTime = $StartTime.AddMinutes($interval)
+    $ExpirationTime =$StartTime.AddSeconds(20)
 $ErrorActionPreference = "Stop"
 
 [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
 [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
 [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
-$APP_ID = '110366bd-56e2-47ed-9bdf-3ce1fa408b6c'
+$APP_ID = 'BreatheAppID'
 
 $line = $file_data[$line_num%$file_data.Length]
 
-$template = @"
-<toast>
-    <visual>
-        <binding template="ToastText02">
-            <text id="1">Relax</text>
-            <text id="2">$line</text>
-        </binding>
-    </visual>
-</toast>
-"@
+$image_arr = "rocket.png", "rocket.png", "butterfly.jpg", "flower.jpg", "cloud.png"
+$image_name = $image_arr[$line_num%$file_data.Length]
 $line_num++
-$xml = New-Object Windows.Data.Xml.Dom.XmlDocument
-$xml.LoadXml($template)
-$toast = New-Object Windows.UI.Notifications.ToastNotification $xml
-[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($APP_ID).Show($toast)
+New-BurntToastNotification -Silent -ExpirationTime $EndTime  -AppLogo $PSScriptRoot"\images\"$image_name -Text "Reminder to take a break",
+                                                           $line.ToString() 
 Start-Sleep -Seconds $( [int]( New-TimeSpan -End $EndTime ).TotalSeconds )
+
 }
